@@ -39,3 +39,28 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# firebase
+.firebase/
+
+# functions (keep source but ignore build artifacts)
+functions/lib/
+functions/node_modules/
+functions/.runtimeconfig.json
+firebase-debug.log
+
+# next
+.next/
+
+# vercel
+.vercel/
+
+# firebase
+.firebase/
+
+# functions (keep source but ignore build artifacts)
+functions/lib/
+functions/node_modules/
+functions/.runtimeconfig.json
+
+node_modules
