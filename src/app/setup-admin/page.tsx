@@ -12,7 +12,7 @@ export default function SetupAdminPage() {
   const [result, setResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const router = useRouter();
 
-  const setupFirstAdmin = async (e: React.FormEvent) => {
+  const setupFirstAdmin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email.trim()) return;
 
@@ -22,7 +22,7 @@ export default function SetupAdminPage() {
     try {
       const functions = getFunctions(app);
       const addAdminRole = httpsCallable(functions, 'addAdminRole');
-      const response = await addAdminRole({ email: email.trim() });
+      await addAdminRole({ email: email.trim() });
       
       setResult({
         type: 'success',
@@ -31,11 +31,12 @@ export default function SetupAdminPage() {
       
       // Clear the email field
       setEmail('');
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { message?: string };
       console.error('Error setting up admin:', error);
       setResult({
         type: 'error',
-        message: error.message || 'Failed to set up admin user. Please check the console for details.'
+        message: err.message || 'Failed to set up admin user. Please check the console for details.'
       });
     } finally {
       setLoading(false);

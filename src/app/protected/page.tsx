@@ -6,7 +6,7 @@ import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "../firebase";
 import Layout from "./components/Layout";
 import { ProjectFilterProvider } from "../contexts/ProjectFilterContext";
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, query, getDocs, doc, getDoc, Timestamp } from "firebase/firestore";
 import { db } from "../firebase";
 
 interface Project {
@@ -14,7 +14,7 @@ interface Project {
   name: string;
   status: string;
   description?: string;
-  createdAt: any;
+  createdAt?: Timestamp;
 }
 
 export default function ProtectedPage() {
@@ -108,7 +108,7 @@ export default function ProtectedPage() {
             Welcome back, {user.displayName || user.email}!
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Here's an overview of your projects and recent activity
+            Here&apos;s an overview of your projects and recent activity
           </p>
         </div>
 
