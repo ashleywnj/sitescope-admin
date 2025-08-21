@@ -9,7 +9,7 @@ interface User {
   email?: string;
   emailVerified: boolean;
   disabled: boolean;
-  customClaims?: any;
+  customClaims?: Record<string, unknown>;
   metadata: {
     creationTime: string;
     lastSignInTime?: string;

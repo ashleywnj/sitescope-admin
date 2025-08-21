@@ -34,7 +34,7 @@ export default function AdminPage() {
             Access Denied
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            You don't have permission to access this admin dashboard.
+            You don&apos;t have permission to access this admin dashboard.
           </p>
         </div>
       </div>

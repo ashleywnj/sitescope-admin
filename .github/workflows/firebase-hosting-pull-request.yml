@@ -19,5 +19,4 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_PHOTONOTES_992DA }}
           projectId: photonotes-992da
-        env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks
+        

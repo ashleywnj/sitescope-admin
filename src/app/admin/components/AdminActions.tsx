@@ -25,7 +25,7 @@ export default function AdminActions() {
       
       // Refresh admin status in case we just made ourselves admin
       await refreshAdminStatus();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage({ 
         type: 'error', 
         text: err?.message || 'Failed to add admin role' 
@@ -55,7 +55,7 @@ export default function AdminActions() {
       
       // Refresh admin status in case we just removed our own admin role
       await refreshAdminStatus();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessage({ 
         type: 'error', 
         text: err?.message || 'Failed to remove admin role' 
@@ -185,7 +185,7 @@ export default function AdminActions() {
             </h3>
             <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
               <p>
-                To set up the very first admin user, you'll need to deploy the Cloud Functions and then 
+                To set up the very first admin user, you&apos;ll need to deploy the Cloud Functions and then 
                 temporarily modify the <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">addAdminRole</code> function 
                 to bypass the admin check for the initial setup. See the documentation for detailed steps.
               </p>

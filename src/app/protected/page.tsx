@@ -183,7 +183,7 @@ export default function ProtectedPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
                 <p className="text-gray-600 dark:text-gray-400">No projects found</p>
-                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">Projects will appear here once they're created</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">Projects will appear here once they&apos;re created</p>
               </div>
             ) : (
               <div className="space-y-4">
