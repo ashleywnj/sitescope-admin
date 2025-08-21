@@ -28,7 +28,7 @@ export default function AdminActions() {
     } catch (err: unknown) {
       setMessage({ 
         type: 'error', 
-        text: err?.message || 'Failed to add admin role' 
+        text: (err as Error)?.message || 'Failed to add admin role' 
       });
       console.error('Error adding admin role:', err);
     } finally {
