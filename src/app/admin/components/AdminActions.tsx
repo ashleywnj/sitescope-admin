@@ -58,7 +58,7 @@ export default function AdminActions() {
     } catch (err: unknown) {
       setMessage({ 
         type: 'error', 
-        text: err?.message || 'Failed to remove admin role' 
+        text: (err as Error)?.message || 'Failed to remove admin role' 
       });
       console.error('Error removing admin role:', err);
     } finally {
