@@ -41,6 +41,10 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    if (!auth) {
+      setIsLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setIsLoading(true);

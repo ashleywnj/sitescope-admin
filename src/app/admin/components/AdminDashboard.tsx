@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'users' | 'actions'>('users');
 
   const handleSignOut = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
     } catch (error) {

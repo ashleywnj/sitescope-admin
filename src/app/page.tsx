@@ -32,6 +32,7 @@ export default function LoginPage() {
     setError("");
     
     try {
+      if (!auth) throw new Error('Firebase not initialized');
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/protected");
     } catch (err: unknown) {

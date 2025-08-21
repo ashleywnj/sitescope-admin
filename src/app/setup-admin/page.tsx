@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from 'react';
+
+// Disable static generation for this page since it uses Firebase
+export const dynamic = 'force-dynamic';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from '../firebase';
 import { useRouter } from 'next/navigation';
@@ -20,6 +23,7 @@ export default function SetupAdminPage() {
     setResult(null);
 
     try {
+      if (!app) throw new Error('Firebase not initialized');
       const functions = getFunctions(app);
       const addAdminRole = httpsCallable(functions, 'addAdminRole');
       await addAdminRole({ email: email.trim() });

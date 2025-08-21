@@ -54,9 +54,9 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
   }, [router]);
 
   const fetchActiveProjectsCount = useCallback(async () => {
-    if (!user) return;
+    if (!user || !db) return;
     try {
-      const userDocRef = doc(db, "users", user.uid);
+      const userDocRef = doc(db!, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       const organizationId = userDoc.data()?.organizationId;
 
@@ -66,7 +66,7 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
         return;
       }
 
-      const projectsRef = collection(db, "organizations", organizationId, "projects");
+      const projectsRef = collection(db!, "organizations", organizationId, "projects");
       const q = query(projectsRef, where("status", "==", "Active"));
       const projectsSnapshot = await getDocs(q);
       setActiveProjectsCount(projectsSnapshot.size);
@@ -77,7 +77,7 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
   }, [user]);
 
   const fetchFollowUpNotesCount = useCallback(async () => {
-    if (!user) return;
+    if (!user || !db) return;
     try {
       console.log('📋 Fetching followUpNote documents assigned to user:', user.uid);
       
@@ -97,9 +97,9 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
   }, [user]);
 
   const fetchTeamMembersCount = useCallback(async () => {
-    if (!user) return;
+    if (!user || !db) return;
     try {
-      const userDocRef = doc(db, "users", user.uid);
+      const userDocRef = doc(db!, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       const organizationId = userDoc.data()?.organizationId;
 
@@ -109,7 +109,7 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
         return;
       }
 
-      const usersRef = collection(db, "users");
+      const usersRef = collection(db!, "users");
       const q = query(usersRef, where("organizationId", "==", organizationId));
       const usersSnapshot = await getDocs(q);
       setTeamMembersCount(usersSnapshot.size);
@@ -121,10 +121,10 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
 
 
   const fetchOverdueNotesCount = useCallback(async () => {
-    if (!user) return;
+    if (!user || !db) return;
     try {
       // Get user's organization ID first
-      const userDocRef = doc(db, "users", user.uid);
+      const userDocRef = doc(db!, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       const organizationId = userDoc.data()?.organizationId;
 
@@ -155,7 +155,7 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
         if (!photoNotesMap[photoKey]) {
           try {
             const allNotesQuery = query(
-              collection(db, `organizations/${orgId}/projects/${projectId}/photos/${photoId}/followUpNote`),
+              collection(db!, `organizations/${orgId}/projects/${projectId}/photos/${photoId}/followUpNote`),
               orderBy("createdAt", "desc")
             );
             const allNotesSnapshot = await getDocs(allNotesQuery);

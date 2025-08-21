@@ -24,7 +24,7 @@ interface ListUsersResult {
   pageToken?: string;
 }
 
-const functions = getFunctions(app);
+const functions = app ? getFunctions(app) : null;
 
 // Check if a user has admin privileges
 export const checkIsAdmin = async (user: User | null): Promise<boolean> => {
@@ -42,6 +42,7 @@ export const checkIsAdmin = async (user: User | null): Promise<boolean> => {
 
 // Admin-only function to add admin role to a user
 export const addAdminRole = async (email: string): Promise<AdminRoleResult> => {
+  if (!functions) throw new Error('Firebase not initialized');
   const addAdminRoleFunction = httpsCallable(functions, 'addAdminRole');
   try {
     const result = await addAdminRoleFunction({ email });
@@ -54,6 +55,7 @@ export const addAdminRole = async (email: string): Promise<AdminRoleResult> => {
 
 // Admin-only function to remove admin role from a user
 export const removeAdminRole = async (email: string): Promise<AdminRoleResult> => {
+  if (!functions) throw new Error('Firebase not initialized');
   const removeAdminRoleFunction = httpsCallable(functions, 'removeAdminRole');
   try {
     const result = await removeAdminRoleFunction({ email });
@@ -66,6 +68,7 @@ export const removeAdminRole = async (email: string): Promise<AdminRoleResult> =
 
 // Admin-only function to list all users
 export const listAllUsers = async (maxResults?: number, pageToken?: string): Promise<ListUsersResult> => {
+  if (!functions) throw new Error('Firebase not initialized');
   const listAllUsersFunction = httpsCallable(functions, 'listAllUsers');
   try {
     const result = await listAllUsersFunction({ maxResults, pageToken });
@@ -78,6 +81,7 @@ export const listAllUsers = async (maxResults?: number, pageToken?: string): Pro
 
 // Admin-only function to get user details by email
 export const getUserByEmail = async (email: string): Promise<UserDetails> => {
+  if (!functions) throw new Error('Firebase not initialized');
   const getUserByEmailFunction = httpsCallable(functions, 'getUserByEmail');
   try {
     const result = await getUserByEmailFunction({ email });
@@ -90,6 +94,7 @@ export const getUserByEmail = async (email: string): Promise<UserDetails> => {
 
 // Admin-only function to disable/enable a user account
 export const setUserDisabled = async (uid: string, disabled: boolean): Promise<AdminRoleResult> => {
+  if (!functions) throw new Error('Firebase not initialized');
   const setUserDisabledFunction = httpsCallable(functions, 'setUserDisabled');
   try {
     const result = await setUserDisabledFunction({ uid, disabled });

@@ -1,5 +1,8 @@
 "use client";
 
+// Disable static generation for this page since it uses Firebase
+export const dynamic = 'force-dynamic';
+
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdmin } from './contexts/AdminContext';

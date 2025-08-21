@@ -39,12 +39,12 @@ export const ProjectFilterProvider: React.FC<ProjectFilterProviderProps> = ({ ch
   const [projectsLoading, setProjectsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
 
     const fetchProjects = async () => {
       try {
         setProjectsLoading(true);
-        const userDocRef = doc(db, "users", user.uid);
+        const userDocRef = doc(db!, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
         const organizationId = userDoc.data()?.organizationId;
 
@@ -53,7 +53,7 @@ export const ProjectFilterProvider: React.FC<ProjectFilterProviderProps> = ({ ch
           return;
         }
 
-        const projectsRef = collection(db, "organizations", organizationId, "projects");
+        const projectsRef = collection(db!, "organizations", organizationId, "projects");
         const q = query(projectsRef);
         const projectsSnapshot = await getDocs(q);
         

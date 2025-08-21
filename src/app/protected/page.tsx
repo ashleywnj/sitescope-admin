@@ -1,5 +1,8 @@
 "use client";
 
+// Disable static generation for this page since it uses Firebase
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
@@ -26,6 +29,10 @@ export default function ProtectedPage() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
@@ -40,9 +47,10 @@ export default function ProtectedPage() {
   }, [router]);
 
   const fetchProjects = async (userId: string) => {
+    if (!db) return;
     try {
       setProjectsLoading(true);
-      const userDocRef = doc(db, "users", userId);
+      const userDocRef = doc(db!, "users", userId);
       const userDoc = await getDoc(userDocRef);
       const organizationId = userDoc.data()?.organizationId;
 
@@ -56,7 +64,7 @@ export default function ProtectedPage() {
       // Count organizations (for this user, it's always 1 since they belong to one org)
       setOrganizationsCount(1);
 
-      const projectsRef = collection(db, "organizations", organizationId, "projects");
+      const projectsRef = collection(db!, "organizations", organizationId, "projects");
       const q = query(projectsRef);
       const projectsSnapshot = await getDocs(q);
       
@@ -75,6 +83,7 @@ export default function ProtectedPage() {
   };
 
   const handleLogout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       router.push("/");
