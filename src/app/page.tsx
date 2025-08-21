@@ -3,12 +3,14 @@ export const dynamic = 'force-dynamic';
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "../app/firebase/auth";
-import { auth } from "../app/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./firebase";
+import Logo from "./protected/components/Logo";
+import Icon from "./protected/components/Icon";
 
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
