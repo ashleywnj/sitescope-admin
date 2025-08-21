@@ -1,5 +1,7 @@
 {
   "hosting": {
+    "site": "sitescope-admin",
+    "public": "public",
     "source": ".",
     "ignore": [
       "firebase.json",
