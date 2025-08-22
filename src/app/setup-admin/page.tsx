@@ -25,8 +25,8 @@ export default function SetupAdminPage() {
     try {
       if (!app) throw new Error('Firebase not initialized');
       const functions = getFunctions(app);
-      const addAdminRole = httpsCallable(functions, 'addAdminRole');
-      await addAdminRole({ email: email.trim() });
+      const setupFirstAdmin = httpsCallable(functions, 'setupFirstAdmin');
+      await setupFirstAdmin({ email: email.trim() });
       
       setResult({
         type: 'success',

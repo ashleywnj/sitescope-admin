@@ -3,10 +3,42 @@ import * as admin from "firebase-admin";
 
 admin.initializeApp();
 
-// Cloud Function to add admin role to a user
+// Cloud Function to set up the very first admin (NO SECURITY CHECK)
+export const setupFirstAdmin = functions.https.onCall(async (data, context) => {
+  // This function bypasses all security checks for initial admin setup
+  // It should be deleted after the first admin is created
+
+  // Validate email parameter
+  if (!data.email || typeof data.email !== 'string') {
+    throw new functions.https.HttpsError(
+      'invalid-argument', 
+      'Email is required and must be a string.'
+    );
+  }
+
+  try {
+    // Get user by email and add the custom claim
+    const user = await admin.auth().getUserByEmail(data.email);
+    await admin.auth().setCustomUserClaims(user.uid, {
+      admin: true,
+    });
+    
+    return { 
+      message: `Success! ${data.email} has been made the first admin.`,
+      uid: user.uid 
+    };
+  } catch (error) {
+    console.error('Error setting up first admin:', error);
+    throw new functions.https.HttpsError(
+      'internal', 
+      `Error setting up first admin: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+});
+
+// Cloud Function to add admin role to a user (SECURE VERSION)
 export const addAdminRole = functions.https.onCall(async (data, context) => {
   // Check if the user calling the function is already an admin
-  // For the first admin, you can bypass this check temporarily
   if (context.auth?.token?.admin !== true) {
     throw new functions.https.HttpsError(
       'permission-denied', 

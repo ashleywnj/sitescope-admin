@@ -5,12 +5,13 @@ import { User } from 'firebase/auth';
 import Link from 'next/link';
 import { checkIsAdmin } from '../../admin/utils/adminAuth';
 import Icon from './Icon';
+import ClientOnly from '../../components/ClientOnly';
 
 interface AdminAccessProps {
   user: User;
 }
 
-export default function AdminAccess({ user }: AdminAccessProps) {
+function AdminAccessContent({ user }: AdminAccessProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checking, setChecking] = useState(true);
 
@@ -46,5 +47,13 @@ export default function AdminAccess({ user }: AdminAccessProps) {
       />
       <span className="hidden sm:inline">Admin</span>
     </Link>
+  );
+}
+
+export default function AdminAccess({ user }: AdminAccessProps) {
+  return (
+    <ClientOnly>
+      <AdminAccessContent user={user} />
+    </ClientOnly>
   );
 }

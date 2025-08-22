@@ -12,28 +12,27 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Only initialize Firebase in browser environment with valid config
-let app: FirebaseApp | null, auth: Auth | null, db: Firestore | null, storage: FirebaseStorage | null;
+// Initialize Firebase - avoid conditional rendering for hydration
+const isValidConfig = firebaseConfig.apiKey && 
+                     firebaseConfig.authDomain && 
+                     firebaseConfig.projectId &&
+                     firebaseConfig.apiKey !== 'undefined';
 
-if (typeof window !== 'undefined') {
-  // Client-side initialization
-  const isValidConfig = firebaseConfig.apiKey && 
-                       firebaseConfig.authDomain && 
-                       firebaseConfig.projectId &&
-                       firebaseConfig.apiKey !== 'undefined';
-  
-  if (isValidConfig) {
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
+let storage: FirebaseStorage | null = null;
+
+// Only initialize on client side with valid config
+if (typeof window !== 'undefined' && isValidConfig) {
+  try {
     app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
   }
-} else {
-  // Server-side/build-time - set to null to prevent initialization
-  app = null;
-  auth = null;
-  db = null;
-  storage = null;
 }
 
 export { app, auth, db, storage }; 
