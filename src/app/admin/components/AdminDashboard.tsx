@@ -6,11 +6,12 @@ import { auth } from '../../firebase';
 import { useAdmin } from '../contexts/AdminContext';
 import UserManagement from './UserManagement';
 import AdminActions from './AdminActions';
+import OrganizationManagement from './OrganizationManagement';
 import Icon from '../../protected/components/Icon';
 
 export default function AdminDashboard() {
   const { user } = useAdmin();
-  const [activeTab, setActiveTab] = useState<'users' | 'actions'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'actions' | 'organizations'>('users');
 
   const handleSignOut = async () => {
     if (!auth) return;
@@ -76,6 +77,16 @@ export default function AdminDashboard() {
             >
               Admin Actions
             </button>
+            <button
+              onClick={() => setActiveTab('organizations')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'organizations'
+                  ? 'border-sky-600 text-sky-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              Organization Management
+            </button>
           </nav>
         </div>
       </div>
@@ -84,6 +95,7 @@ export default function AdminDashboard() {
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {activeTab === 'users' && <UserManagement />}
         {activeTab === 'actions' && <AdminActions />}
+        {activeTab === 'organizations' && <OrganizationManagement />}
       </main>
     </div>
   );

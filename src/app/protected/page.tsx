@@ -9,8 +9,9 @@ import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "../firebase";
 import Layout from "./components/Layout";
 import { ProjectFilterProvider } from "../contexts/ProjectFilterContext";
-import { collection, query, getDocs, doc, getDoc, Timestamp } from "firebase/firestore";
+import { collection, query, getDocs, doc, getDoc, Timestamp, collectionGroup } from "firebase/firestore";
 import { db } from "../firebase";
+import { checkIsAdmin } from "../admin/utils/adminAuth";
 
 interface Project {
   id: string;
@@ -25,7 +26,7 @@ export default function ProtectedPage() {
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
-  const [organizationsCount, setOrganizationsCount] = useState(0);
+  const [organizationsCount, setOrganizationsCount] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -33,10 +34,11 @@ export default function ProtectedPage() {
       setLoading(false);
       return;
     }
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-        fetchProjects(user.uid);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        // Call fetchProjects after user state is set
+        setTimeout(() => fetchProjects(currentUser.uid, currentUser), 0);
       } else {
         router.push("/");
       }
@@ -44,36 +46,76 @@ export default function ProtectedPage() {
     });
 
     return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  const fetchProjects = async (userId: string) => {
+  const fetchProjects = async (userId: string, currentUser?: User) => {
     if (!db) return;
+    const userToCheck = currentUser || user;
+    if (!userToCheck) return;
     try {
       setProjectsLoading(true);
-      const userDocRef = doc(db!, "users", userId);
-      const userDoc = await getDoc(userDocRef);
-      const organizationId = userDoc.data()?.organizationId;
+      
+      // Check if user is admin
+      const isAdmin = await checkIsAdmin(userToCheck);
+      
+      if (isAdmin) {
+        // Admin user: Show data from all organizations
+        console.log("Admin user detected - fetching data from all organizations");
+        
+        // Count all organizations
+        try {
+          const organizationsRef = collection(db!, "organizations");
+          const organizationsSnapshot = await getDocs(organizationsRef);
+          setOrganizationsCount(organizationsSnapshot.size);
+        } catch (error) {
+          console.error("Error fetching organizations count:", error);
+          setOrganizationsCount(null);
+        }
 
-      if (!organizationId) {
-        console.error("User has no organization ID");
-        setProjects([]);
-        setOrganizationsCount(0);
-        return;
+        // Get all projects from all organizations using collectionGroup
+        try {
+          const allProjectsQuery = query(collectionGroup(db!, "projects"));
+          const allProjectsSnapshot = await getDocs(allProjectsQuery);
+          
+          const projectsData = allProjectsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as Project[];
+          
+          setProjects(projectsData);
+        } catch (error) {
+          console.error("Error fetching all projects:", error);
+          setProjects([]);
+        }
+      } else {
+        // Regular user: Show data from their organization only
+        const userDocRef = doc(db!, "users", userId);
+        const userDoc = await getDoc(userDocRef);
+        const organizationId = userDoc.data()?.organizationId;
+
+        if (!organizationId) {
+          console.error("User has no organization ID");
+          setProjects([]);
+          setOrganizationsCount(1); // Regular users see their own org count as 1
+          return;
+        }
+
+        // Count only their organization (always 1 for regular users)
+        setOrganizationsCount(1);
+
+        // Get projects from their organization only
+        const projectsRef = collection(db!, "organizations", organizationId, "projects");
+        const q = query(projectsRef);
+        const projectsSnapshot = await getDocs(q);
+        
+        const projectsData = projectsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Project[];
+        
+        setProjects(projectsData);
       }
-
-      // Count organizations (for this user, it's always 1 since they belong to one org)
-      setOrganizationsCount(1);
-
-      const projectsRef = collection(db!, "organizations", organizationId, "projects");
-      const q = query(projectsRef);
-      const projectsSnapshot = await getDocs(q);
-      
-      const projectsData = projectsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Project[];
-      
-      setProjects(projectsData);
     } catch (error) {
       console.error("Error fetching projects:", error);
       setProjects([]);
@@ -136,12 +178,14 @@ export default function ProtectedPage() {
               {projects.filter(p => p.status === 'Active').length}
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Currently in progress</p>
-            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Organizations</span>
-                <span className="text-lg font-semibold text-gray-900 dark:text-white">{organizationsCount}</span>
+                          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Organizations</span>
+                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {organizationsCount !== null ? organizationsCount : "..."}
+                  </span>
+                </div>
               </div>
-            </div>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
