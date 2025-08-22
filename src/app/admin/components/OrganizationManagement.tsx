@@ -22,11 +22,16 @@ export default function OrganizationManagement() {
   const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
   const [addingOrg, setAddingOrg] = useState(false);
-  const [newOrg, setNewOrg] = useState({
+  const [newOrg, setNewOrg] = useState<{
+    name: string;
+    description: string;
+    contactEmail: string;
+    status: 'Active' | 'Inactive' | 'Suspended';
+  }>({
     name: '',
     description: '',
     contactEmail: '',
-    status: 'Active' as const
+    status: 'Active'
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'Active' | 'Inactive' | 'Suspended'>('all');
@@ -127,7 +132,7 @@ export default function OrganizationManagement() {
         name: '',
         description: '',
         contactEmail: '',
-        status: 'Active'
+        status: 'Active' as 'Active' | 'Inactive' | 'Suspended'
       });
       setAddingOrg(false);
     } catch (error) {
@@ -140,7 +145,7 @@ export default function OrganizationManagement() {
       name: '',
       description: '',
       contactEmail: '',
-      status: 'Active'
+      status: 'Active' as 'Active' | 'Inactive' | 'Suspended'
     });
     setAddingOrg(false);
   };
@@ -412,7 +417,12 @@ export default function OrganizationManagement() {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {org.createdAt ? new Date(org.createdAt.seconds * 1000).toLocaleDateString() : 'Unknown'}
+                    {org.createdAt ? 
+                      (org.createdAt instanceof Date 
+                        ? org.createdAt.toLocaleDateString() 
+                        : new Date(org.createdAt.seconds * 1000).toLocaleDateString()
+                      ) : 'Unknown'
+                    }
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     {editingOrg?.id === org.id ? (
@@ -541,7 +551,12 @@ export default function OrganizationManagement() {
                   Created
                 </label>
                 <p className="text-sm text-gray-900 dark:text-white">
-                  {selectedOrg.createdAt ? new Date(selectedOrg.createdAt.seconds * 1000).toLocaleDateString() : 'Unknown'}
+                  {selectedOrg.createdAt ? 
+                    (selectedOrg.createdAt instanceof Date 
+                      ? selectedOrg.createdAt.toLocaleDateString() 
+                      : new Date(selectedOrg.createdAt.seconds * 1000).toLocaleDateString()
+                    ) : 'Unknown'
+                  }
                 </p>
               </div>
 
