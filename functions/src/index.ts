@@ -4,7 +4,7 @@ import * as admin from "firebase-admin";
 admin.initializeApp();
 
 // Cloud Function to set up the very first admin (NO SECURITY CHECK)
-export const setupFirstAdmin = functions.https.onCall(async (data, context) => {
+export const setupFirstAdmin = functions.https.onCall(async (data) => {
   // This function bypasses all security checks for initial admin setup
   // It should be deleted after the first admin is created
 

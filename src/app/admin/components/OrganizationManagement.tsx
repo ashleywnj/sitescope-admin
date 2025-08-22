@@ -9,7 +9,7 @@ interface Organization {
   id: string;
   name: string;
   status: 'Active' | 'Inactive' | 'Suspended';
-  createdAt: any;
+  createdAt: { seconds: number; nanoseconds: number } | Date;
   description?: string;
   contactEmail?: string;
   userCount?: number;
@@ -254,7 +254,7 @@ export default function OrganizationManagement() {
                 </label>
                 <select
                   value={newOrg.status}
-                  onChange={(e) => setNewOrg({ ...newOrg, status: e.target.value as any })}
+                  onChange={(e) => setNewOrg({ ...newOrg, status: e.target.value as 'Active' | 'Inactive' | 'Suspended' })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                 >
                   <option value="Active">Active</option>
@@ -302,7 +302,7 @@ export default function OrganizationManagement() {
         </div>
         <select
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value as any)}
+          onChange={(e) => setFilterStatus(e.target.value as 'all' | 'Active' | 'Inactive' | 'Suspended')}
           className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-transparent"
         >
           <option value="all">All Statuses</option>
@@ -379,7 +379,7 @@ export default function OrganizationManagement() {
                     {editingOrg?.id === org.id ? (
                       <select
                         value={editingOrg.status}
-                        onChange={(e) => setEditingOrg({ ...editingOrg, status: e.target.value as any })}
+                        onChange={(e) => setEditingOrg({ ...editingOrg, status: e.target.value as 'Active' | 'Inactive' | 'Suspended' })}
                         className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
                       >
                         <option value="Active">Active</option>
