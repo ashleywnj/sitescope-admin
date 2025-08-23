@@ -1,5 +1,8 @@
 "use client";
 
+// Disable static generation for this page since it uses Firebase
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '../firebase';
