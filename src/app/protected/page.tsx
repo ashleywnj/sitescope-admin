@@ -134,7 +134,7 @@ export default function ProtectedPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Active Projects</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Active Organizations</h3>
               <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                 <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -142,14 +142,15 @@ export default function ProtectedPage() {
               </div>
             </div>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {projects.filter(p => p.status === 'Active').length}
+             
+              {organizationsCount !== null ? organizationsCount : "..."}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Across all organizations</p>
+           
                           <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Organizations</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Active Projects across all organizations</span>
                   <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {organizationsCount !== null ? organizationsCount : "..."}
+                  {projects.filter(p => p.status === 'Active').length}
                   </span>
                 </div>
               </div>
