@@ -18,6 +18,27 @@ const isValidConfig = firebaseConfig.apiKey &&
                      firebaseConfig.projectId &&
                      firebaseConfig.apiKey !== 'undefined';
 
+// Add debugging to identify missing environment variables
+console.log('Firebase Config Check:', {
+  apiKey: !!firebaseConfig.apiKey,
+  authDomain: !!firebaseConfig.authDomain,
+  projectId: !!firebaseConfig.projectId,
+  storageBucket: !!firebaseConfig.storageBucket,
+  messagingSenderId: !!firebaseConfig.messagingSenderId,
+  appId: !!firebaseConfig.appId,
+  apiKeyValue: firebaseConfig.apiKey ? `${firebaseConfig.apiKey.substring(0, 10)}...` : 'undefined',
+  authDomainValue: firebaseConfig.authDomain || 'undefined',
+  projectIdValue: firebaseConfig.projectId || 'undefined',
+  isValidConfig
+});
+
+// Log any undefined values specifically
+Object.entries(firebaseConfig).forEach(([key, value]) => {
+  if (!value || value === 'undefined') {
+    console.warn(`⚠️ Missing Firebase config: ${key} = ${value}`);
+  }
+});
+
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let db: Firestore | null = null;
