@@ -1,7 +1,7 @@
-import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
-import { getStorage, type FirebaseStorage } from "firebase/storage";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,48 +12,9 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase - avoid conditional rendering for hydration
-const isValidConfig = firebaseConfig.apiKey && 
-                     firebaseConfig.authDomain && 
-                     firebaseConfig.projectId &&
-                     firebaseConfig.apiKey !== 'undefined';
-
-// Add debugging to identify missing environment variables
-console.log('Firebase Config Check:', {
-  apiKey: !!firebaseConfig.apiKey,
-  authDomain: !!firebaseConfig.authDomain,
-  projectId: !!firebaseConfig.projectId,
-  storageBucket: !!firebaseConfig.storageBucket,
-  messagingSenderId: !!firebaseConfig.messagingSenderId,
-  appId: !!firebaseConfig.appId,
-  apiKeyValue: firebaseConfig.apiKey ? `${firebaseConfig.apiKey.substring(0, 10)}...` : 'undefined',
-  authDomainValue: firebaseConfig.authDomain || 'undefined',
-  projectIdValue: firebaseConfig.projectId || 'undefined',
-  isValidConfig
-});
-
-// Log any undefined values specifically
-Object.entries(firebaseConfig).forEach(([key, value]) => {
-  if (!value || value === 'undefined') {
-    console.warn(`⚠️ Missing Firebase config: ${key} = ${value}`);
-  }
-});
-
-let app: FirebaseApp | null = null;
-let auth: Auth | null = null;
-let db: Firestore | null = null;
-let storage: FirebaseStorage | null = null;
-
-// Only initialize on client side with valid config
-if (typeof window !== 'undefined' && isValidConfig) {
-  try {
-    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
-  } catch (error) {
-    console.error('Firebase initialization error:', error);
-  }
-}
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
 export { app, auth, db, storage }; 
