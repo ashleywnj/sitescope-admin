@@ -9,9 +9,8 @@ import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { auth } from "../firebase";
 import Layout from "./components/Layout";
 import { ProjectFilterProvider } from "../contexts/ProjectFilterContext";
-import { collection, query, getDocs, doc, getDoc, Timestamp, collectionGroup } from "firebase/firestore";
+import { collection, query, getDocs, Timestamp, collectionGroup } from "firebase/firestore";
 import { db } from "../firebase";
-import { checkIsAdmin } from "../admin/utils/adminAuth";
 
 interface Project {
   id: string;
@@ -38,7 +37,7 @@ export default function ProtectedPage() {
       if (currentUser) {
         setUser(currentUser);
         // Call fetchProjects after user state is set
-        setTimeout(() => fetchProjects(currentUser.uid, currentUser), 0);
+        setTimeout(() => fetchProjects(currentUser), 0);
       } else {
         router.push("/");
       }
@@ -49,72 +48,40 @@ export default function ProtectedPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  const fetchProjects = async (userId: string, currentUser?: User) => {
+  const fetchProjects = async (currentUser?: User) => {
     if (!db) return;
     const userToCheck = currentUser || user;
     if (!userToCheck) return;
     try {
       setProjectsLoading(true);
       
-      // Check if user is admin
-      const isAdmin = await checkIsAdmin(userToCheck);
+      // This dashboard is admin-only: Show data from all organizations
+      console.log("Fetching data from all organizations");
       
-      if (isAdmin) {
-        // Admin user: Show data from all organizations
-        console.log("Admin user detected - fetching data from all organizations");
+      // Count all organizations
+      try {
+        const organizationsRef = collection(db!, "organizations");
+        const organizationsSnapshot = await getDocs(organizationsRef);
+        setOrganizationsCount(organizationsSnapshot.size);
+      } catch (error) {
+        console.error("Error fetching organizations count:", error);
+        setOrganizationsCount(null);
+      }
+
+      // Get all projects from all organizations using collectionGroup
+      try {
+        const allProjectsQuery = query(collectionGroup(db!, "projects"));
+        const allProjectsSnapshot = await getDocs(allProjectsQuery);
         
-        // Count all organizations
-        try {
-          const organizationsRef = collection(db!, "organizations");
-          const organizationsSnapshot = await getDocs(organizationsRef);
-          setOrganizationsCount(organizationsSnapshot.size);
-        } catch (error) {
-          console.error("Error fetching organizations count:", error);
-          setOrganizationsCount(null);
-        }
-
-        // Get all projects from all organizations using collectionGroup
-        try {
-          const allProjectsQuery = query(collectionGroup(db!, "projects"));
-          const allProjectsSnapshot = await getDocs(allProjectsQuery);
-          
-          const projectsData = allProjectsSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Project[];
-          
-          setProjects(projectsData);
-        } catch (error) {
-          console.error("Error fetching all projects:", error);
-          setProjects([]);
-        }
-      } else {
-        // Regular user: Show data from their organization only
-        const userDocRef = doc(db!, "users", userId);
-        const userDoc = await getDoc(userDocRef);
-        const organizationId = userDoc.data()?.organizationId;
-
-        if (!organizationId) {
-          console.error("User has no organization ID");
-          setProjects([]);
-          setOrganizationsCount(1); // Regular users see their own org count as 1
-          return;
-        }
-
-        // Count only their organization (always 1 for regular users)
-        setOrganizationsCount(1);
-
-        // Get projects from their organization only
-        const projectsRef = collection(db!, "organizations", organizationId, "projects");
-        const q = query(projectsRef);
-        const projectsSnapshot = await getDocs(q);
-        
-        const projectsData = projectsSnapshot.docs.map(doc => ({
+        const projectsData = allProjectsSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         })) as Project[];
         
         setProjects(projectsData);
+      } catch (error) {
+        console.error("Error fetching all projects:", error);
+        setProjects([]);
       }
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -159,7 +126,7 @@ export default function ProtectedPage() {
             Welcome back, {user.displayName || user.email}!
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Here&apos;s an overview of your projects and recent activity
+            Super Admin Dashboard - Overview of all organizations and projects
           </p>
         </div>
 
@@ -177,7 +144,7 @@ export default function ProtectedPage() {
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {projects.filter(p => p.status === 'Active').length}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Currently in progress</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Across all organizations</p>
                           <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Organizations</span>
@@ -200,7 +167,7 @@ export default function ProtectedPage() {
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {projects.length}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Across all statuses</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Across all organizations and statuses</p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -215,7 +182,7 @@ export default function ProtectedPage() {
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {projects.filter(p => p.status === 'Review').length}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Awaiting review</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Across all organizations</p>
           </div>
         </div>
 
