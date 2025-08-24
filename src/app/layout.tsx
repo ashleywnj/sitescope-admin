@@ -22,10 +22,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const bodyClassName = [
+    geistSans.variable,
+    geistMono.variable,
+    'antialiased'
+  ].filter(Boolean).join(' ');
+
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      <body 
+        className={bodyClassName}
+        suppressHydrationWarning={true}
       >
         {children}
       </body>

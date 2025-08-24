@@ -14,6 +14,7 @@ import { User } from "firebase/auth";
 import { db } from "../../firebase";
 import { collection, doc, query, where, getDocs, getDoc, collectionGroup, orderBy } from "firebase/firestore";
 import { useProjectFilter } from "../../contexts/ProjectFilterContext";
+import { checkIsAdmin } from "../../admin/utils/adminAuth";
 import AdminAccess from "./AdminAccess";
 
 
@@ -56,20 +57,31 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
   const fetchActiveProjectsCount = useCallback(async () => {
     if (!user || !db) return;
     try {
-      const userDocRef = doc(db!, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      const organizationId = userDoc.data()?.organizationId;
+      // Check if user is admin first
+      const isAdmin = await checkIsAdmin(user);
+      
+      if (isAdmin) {
+        // Admin users can see all active projects across all organizations
+        const allProjectsQuery = query(collectionGroup(db!, "projects"), where("status", "==", "Active"));
+        const allProjectsSnapshot = await getDocs(allProjectsQuery);
+        setActiveProjectsCount(allProjectsSnapshot.size);
+      } else {
+        // Regular users see only their organization's projects
+        const userDocRef = doc(db!, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const organizationId = userDoc.data()?.organizationId;
 
-      if (!organizationId) {
-        console.error("User has no organization ID");
-        setActiveProjectsCount(null);
-        return;
+        if (!organizationId) {
+          console.error("User has no organization ID");
+          setActiveProjectsCount(null);
+          return;
+        }
+
+        const projectsRef = collection(db!, "organizations", organizationId, "projects");
+        const q = query(projectsRef, where("status", "==", "Active"));
+        const projectsSnapshot = await getDocs(q);
+        setActiveProjectsCount(projectsSnapshot.size);
       }
-
-      const projectsRef = collection(db!, "organizations", organizationId, "projects");
-      const q = query(projectsRef, where("status", "==", "Active"));
-      const projectsSnapshot = await getDocs(q);
-      setActiveProjectsCount(projectsSnapshot.size);
     } catch (error) {
       console.error("Error fetching active projects count:", error);
       setActiveProjectsCount(null);
@@ -99,20 +111,31 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
   const fetchTeamMembersCount = useCallback(async () => {
     if (!user || !db) return;
     try {
-      const userDocRef = doc(db!, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      const organizationId = userDoc.data()?.organizationId;
+      // Check if user is admin first
+      const isAdmin = await checkIsAdmin(user);
+      
+      if (isAdmin) {
+        // Admin users can see all users across all organizations
+        const allUsersRef = collection(db!, "users");
+        const allUsersSnapshot = await getDocs(allUsersRef);
+        setTeamMembersCount(allUsersSnapshot.size);
+      } else {
+        // Regular users see only their organization's team members
+        const userDocRef = doc(db!, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const organizationId = userDoc.data()?.organizationId;
 
-      if (!organizationId) {
-        console.error("User has no organization ID");
-        setTeamMembersCount(null);
-        return;
+        if (!organizationId) {
+          console.error("User has no organization ID");
+          setTeamMembersCount(null);
+          return;
+        }
+
+        const usersRef = collection(db!, "users");
+        const q = query(usersRef, where("organizationId", "==", organizationId));
+        const usersSnapshot = await getDocs(q);
+        setTeamMembersCount(usersSnapshot.size);
       }
-
-      const usersRef = collection(db!, "users");
-      const q = query(usersRef, where("organizationId", "==", organizationId));
-      const usersSnapshot = await getDocs(q);
-      setTeamMembersCount(usersSnapshot.size);
     } catch (error) {
       console.error("Error fetching team members count:", error);
       setTeamMembersCount(null);
@@ -123,16 +146,22 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
   const fetchOverdueNotesCount = useCallback(async () => {
     if (!user || !db) return;
     try {
-      // Get user's organization ID first
-      const userDocRef = doc(db!, "users", user.uid);
-      const userDoc = await getDoc(userDocRef);
-      const organizationId = userDoc.data()?.organizationId;
+      // Check if user is admin first
+      const isAdmin = await checkIsAdmin(user);
+      
+      if (!isAdmin) {
+        // For regular users, verify they have an organization ID
+        const userDocRef = doc(db!, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        const organizationId = userDoc.data()?.organizationId;
 
-      if (!organizationId) {
-        console.error("User has no organization ID");
-        setOverdueNotesCount(0);
-        return;
+        if (!organizationId) {
+          console.error("User has no organization ID");
+          setOverdueNotesCount(0);
+          return;
+        }
       }
+      // Admin users don't need organization ID check since they can be assigned notes across organizations
 
       // Query follow-up notes assigned to user
       const followUpNotesQuery = query(
@@ -407,9 +436,6 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
                     </svg>
                     Manage Profile
                   </button>
-                  <div className="px-2 py-1">
-                    <AdminAccess user={user} />
-                  </div>
                   <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                   <button
                     onClick={() => {
@@ -449,7 +475,7 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
                     disabled={navigating === "/protected"}
                   >
                     <FormatListBulletedIcon className="w-5 h-5 mr-3" />
-                    Projects
+                    Dashboard
                     {navigating === "/protected" && (
                       <svg className="animate-spin h-4 w-4 ml-auto" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
@@ -469,7 +495,7 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
                     disabled={navigating === "/protected/todo"}
                   >
                     <PendingActionsIcon className="w-5 h-5 mr-3" />
-                    To Do
+                    Revenue
                     {navigating === "/protected/todo" && (
                       <svg className="animate-spin h-4 w-4 ml-auto" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
@@ -478,72 +504,14 @@ const Layout = memo(({ children, user, onLogout }: LayoutProps) => {
                     )}
                   </button>
                 </li>
-                <li className="mb-4">
-                  <button
-                    onClick={() => handleNavigation("/protected/kanban")}
-                    className={`w-full flex items-center p-2 rounded-lg transition-all duration-200 ${
-                      isActive("/protected/kanban")
-                        ? "text-white bg-sky-700"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                    } ${navigating === "/protected/kanban" ? "opacity-75 scale-95" : ""}`}
-                    disabled={navigating === "/protected/kanban"}
-                  >
-                    <ViewKanbanIcon className="w-5 h-5 mr-3" />
-                    To Do Kanban
-                    {navigating === "/protected/kanban" && (
-                      <svg className="animate-spin h-4 w-4 ml-auto" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                        <path className="opacity-75" fill="currentColor" d="m12 2 a10 10 0 0 1 10 10l-4 0a6 6 0 0 0-6-6z"/>
-                      </svg>
-                    )}
-                  </button>
-                </li>
-                <li className="mb-4">
-                  <button
-                    onClick={() => handleNavigation("/protected/team")}
-                    className={`w-full flex items-center p-2 rounded-lg transition-all duration-200 ${
-                      isActive("/protected/team") 
-                        ? "text-white bg-sky-700" 
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                    } ${navigating === "/protected/team" ? "opacity-75 scale-95" : ""}`}
-                    disabled={navigating === "/protected/team"}
-                  >
-                    <PeopleOutlineOutlinedIcon className="w-5 h-5 mr-3" />
-                    Team
-                    {navigating === "/protected/team" && (
-                      <svg className="animate-spin h-4 w-4 ml-auto" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                        <path className="opacity-75" fill="currentColor" d="m12 2 a10 10 0 0 1 10 10l-4 0a6 6 0 0 0-6-6z"/>
-                      </svg>
-                    )}
-                  </button>
-                </li>
+
+                
+                {/* Admin Dashboard Link - Only visible to admin users */}
+                <AdminAccess user={user} />
+                
               </ul>
             </nav>
-            {/* Quick Stats */}
-            <div className="mt-8">
-              <h3 className="text-md font-semibold text-gray-600 dark:text-gray-400 mb-4">Quick Stats</h3>
-              <div className="text-sm text-gray-800 dark:text-gray-200">
-                <div className="flex items-center justify-between mb-2 text-md text-gray-500 dark:text-gray-400">
-                  <span>Active Projects</span>
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-green-500 text-green-700 bg-green-100 font-semibold">
-                    {activeProjectsCount !== null ? activeProjectsCount : "..."}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between mb-2 text-md text-gray-500 dark:text-gray-400">
-                  <span>Follow-up Notes</span>
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-orange-500 text-orange-700 bg-orange-100 font-semibold">
-                    {followUpNotesCount !== null ? followUpNotesCount : "..."}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-md text-gray-500 dark:text-gray-400">
-                  <span>Team Members</span>
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-blue-500 text-blue-700 bg-blue-100 font-semibold">
-                    {teamMembersCount !== null ? teamMembersCount : "..."}
-                  </span>
-                </div>
-              </div>
-            </div>
+
           </div>
           {/* Settings link */}
           <div className="mt-8">

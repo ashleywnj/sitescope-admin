@@ -190,7 +190,7 @@ export default function ProtectedPage() {
         {/* Recent Projects */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Projects</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Service Utilization</h3>
           </div>
           <div className="p-6">
             {projectsLoading ? (
@@ -208,30 +208,19 @@ export default function ProtectedPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {projects.slice(0, 5).map((project) => (
-                  <div key={project.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900 dark:text-white">{project.name}</h4>
-                      {project.description && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{project.description}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                        project.status === 'Active' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
-                        project.status === 'Review' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400' :
-                        'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                      }`}>
-                        {project.status}
-                      </span>
-                      {project.createdAt && (
-                        <span className="text-sm text-gray-500 dark:text-gray-500">
-                          {new Date(project.createdAt.seconds * 1000).toLocaleDateString()}
-                        </span>
-                      )}
-                    </div>
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900 dark:text-white">Server Activity Statistics</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Will add statistics about activity on the server (sign in, uploads, data used, etc)
+                    </p>
                   </div>
-                ))}
+                  <div className="flex items-center space-x-4">
+                    <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                      Coming Soon
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
           </div>

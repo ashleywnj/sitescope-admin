@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 import { auth } from '../../firebase';
 import { useAdmin } from '../contexts/AdminContext';
 import UserManagement from './UserManagement';
@@ -11,6 +12,7 @@ import Icon from '../../protected/components/Icon';
 
 export default function AdminDashboard() {
   const { user } = useAdmin();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'users' | 'actions' | 'organizations'>('users');
 
   const handleSignOut = async () => {
@@ -29,6 +31,16 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
+              <button
+                onClick={() => router.push('/protected')}
+                className="flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors mr-4"
+              >
+                <Icon 
+                  path="M19 12H5m14 0l-4-4m4 4l-4 4" 
+                  className="w-4 h-4 mr-2"
+                />
+                Back to Dashboard
+              </button>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Super Admin Dashboard
               </h1>
